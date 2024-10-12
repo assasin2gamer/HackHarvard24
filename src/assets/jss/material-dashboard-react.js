@@ -71,11 +71,12 @@ const defaultFont = {
 };
 
 const primaryColor = ["#9c27b0", "#ab47bc", "#8e24aa", "#af2cc5"];
-const warningColor = ["#ff9800", "#ffa726", "#fb8c00", "#ffa21a"];
-const dangerColor = ["#f44336", "#ef5350", "#e53935", "#f55a4e"];
-const successColor = ["#4caf50", "#66bb6a", "#43a047", "#5cb860"];
-const infoColor = ["#00acc1", "#26c6da", "#00acc1", "#00d3ee"];
+const warningColor = ["#F57A9D", "#fa91af", "#f2779a", "#e06386"];
+const dangerColor = ["#584DA8", "#7368c4", "#6f63c9", "#8175e0"];
+const successColor = ["#8CA0D7", "#8ea7ed", "#abbceb", "#83a0f2"];
+const infoColor = ["#FFC2CE", "#fad4dc", "#fa9db1", "#ffbfcd"];
 const roseColor = ["#e91e63", "#ec407a", "#d81b60", "#eb3573"];
+const darkPinkolor = ["F57A9D", "F57A9D", "F57A9D", "F57A9D"];
 const grayColor = [
   "#999",
   "#777",

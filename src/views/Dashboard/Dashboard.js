@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
 // react plugin for creating charts
 import ChartistGraph from "react-chartist";
+import Chart from "react-apexcharts";
 // @material-ui/core
 import { makeStyles } from "@material-ui/core/styles";
 import Icon from "@material-ui/core/Icon";
@@ -42,7 +44,133 @@ import styles from "assets/jss/material-dashboard-react/views/dashboardStyle.js"
 const useStyles = makeStyles(styles);
 
 export default function Dashboard() {
+
   const classes = useStyles();
+
+  const [heartRateData, setHeartRateData] = useState({
+    options: {
+      chart: {
+        id: "heart-rate-chart",
+      },
+      xaxis: {
+        categories: [],
+      },
+      title: {
+        text: "Heart Rate Data",
+        align: "left",
+      },
+    },
+    series: [
+      {
+        name: "Heart Rate",
+        data: [],
+      },
+    ],
+  });
+
+  const [sleepData, setSleepData] = useState({
+    options: {
+      chart: {
+        id: "sleep-chart",
+      },
+      xaxis: {
+        categories: [],
+      },
+      title: {
+        text: "Sleep Data",
+        align: "left",
+      },
+    },
+    series: [
+      {
+        name: "Sleep Duration (hrs)",
+        data: [],
+      },
+    ],
+  });
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch("http://54.165.183.89:22099/get");
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+
+      // Log the fetched data
+      console.log("Fetched data:", data);
+
+      // Assuming data contains heartRate and sleep arrays
+      if (data.heartArr && data.sleep) {
+        const currentTime = new Date().toLocaleTimeString();
+
+        // Update heart rate data
+        // setHeartRateData((prevState) => {
+        //   const newData = [
+        //     ...prevState.series[0].data,
+        //     [Date.now(), data.heartArr[data.heartArr.length - 1].value],
+        //   ];
+        
+        //   return {
+        //     ...prevState,
+        //     series: [
+        //       {
+        //         name: "Heart Rate",
+        //         data: newData, // Updated to include all heart rate data points in series
+        //       },
+        //     ],
+        //   };
+        // });
+
+        setHeartRateData((prevOptions) => ({
+          ...prevOptions,
+          series: [
+            {
+              name: "Heart Rate",
+              data: [...prevOptions.series[0].data, data.heartArr[data.heartArr.length - 1]],
+            },
+          ],
+        }));
+        
+        // update sleepData
+        setSleepData((prevState) => {
+          const newData = [
+            ...prevState.series[0].data,
+            [Date.now(), data.sleep[data.sleep.length - 1].duration],
+          ];
+        
+          return {
+            ...prevState,
+            series: [
+              {
+                name: "Sleep Duration (hrs)",
+                data: newData, // Updated to include all sleep data points in series
+              },
+            ],
+          };
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(); // Initial fetch
+    const interval = setInterval(fetchData, 20000); // Fetch data every 20 seconds
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
+
+  // useEffect to log heartRateData
+  useEffect(() => {
+    console.log("Updated Heart Rate Data:", heartRateData);
+  }, [heartRateData]);
+
+  // useEffect to log sleepData
+  useEffect(() => {
+    console.log("Updated Sleep Data:", sleepData);
+  }, [sleepData]);
+
   return (
     <div>
       <GridContainer>
@@ -59,9 +187,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardFooter stats>
               <div className={classes.stats}>
-                <Danger>
-                  <Warning />
-                </Danger>
+                <Warning />
                 <a href="#pablo" onClick={(e) => e.preventDefault()}>
                   Get more space
                 </a>
@@ -121,7 +247,58 @@ export default function Dashboard() {
           </Card>
         </GridItem>
       </GridContainer>
+
       <GridContainer>
+        {/* Heart Rate Data Chart */}
+        <GridItem xs={12} sm={12} md={6}>
+          <Card chart>
+            <CardHeader color="info">
+              <Chart
+                options={heartRateData.options}
+                series={heartRateData.series}
+                type="line"
+                height={350}
+              />
+            </CardHeader>
+            <CardBody color="info">
+              <h4 className={classes.cardTitle}>Heart Rate Data</h4>
+              <p className={classes.cardCategory}>
+                Visual representation of heart rate readings.
+              </p>
+            </CardBody>
+            <CardFooter chart>
+              <div className={classes.stats}>
+                <AccessTime /> updated {new Date().toLocaleTimeString()}
+              </div>
+            </CardFooter>
+          </Card>
+        </GridItem>
+        {/* Sleep Data Chart */}
+        <GridItem xs={12} sm={12} md={6}>
+          <Card chart>
+            <CardHeader color="info">
+              <Chart
+                options={sleepData.options}
+                series={sleepData.series}
+                type="bar"
+                height={350}
+              />
+            </CardHeader>
+            <CardBody>
+              <h4 className={classes.cardTitle}>Sleep Data</h4>
+              <p className={classes.cardCategory}>
+                Visual representation of sleep duration readings.
+              </p>
+            </CardBody>
+            <CardFooter chart>
+              <div className={classes.stats}>
+                <AccessTime /> updated {new Date().toLocaleTimeString()}
+              </div>
+            </CardFooter>
+          </Card>
+        </GridItem>
+      </GridContainer>
+      {/* <GridContainer>
         <GridItem xs={12} sm={12} md={4}>
           <Card chart>
             <CardHeader color="success">
@@ -259,7 +436,7 @@ export default function Dashboard() {
             </CardBody>
           </Card>
         </GridItem>
-      </GridContainer>
+      </GridContainer> */}
     </div>
   );
 }

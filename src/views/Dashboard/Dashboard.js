@@ -35,6 +35,7 @@ import CardIcon from "components/Card/CardIcon.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 import PromptBox from "components/PromptBox/PromptBox.js";
+import Prediction from "components/Predictions/Predictions.js";
 
 import { bugs, website, server } from "variables/general.js";
 
@@ -401,6 +402,9 @@ export default function Dashboard() {
 
       <GridContainer>
         <PromptBox/>
+      </GridContainer>
+      <GridContainer>
+        <Prediction/>
       </GridContainer>
 
       <GridContainer>

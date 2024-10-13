@@ -18,6 +18,7 @@
 // @material-ui/icons
 import Dashboard from "@material-ui/icons/Dashboard";
 import Person from "@material-ui/icons/Person";
+import Settings from "@material-ui/icons/Settings";
 import LibraryBooks from "@material-ui/icons/LibraryBooks";
 import BubbleChart from "@material-ui/icons/BubbleChart";
 import LocationOn from "@material-ui/icons/LocationOn";
@@ -52,6 +53,14 @@ const dashboardRoutes = [
     icon: Person,
     component: UserProfile,
     layout: "/admin",
+  },
+  {
+    path: "/login",
+    name: "Login",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: Settings,
+    component: UserProfile,
+    layout: "/login",
   },
   // {
   //   path: "/table",

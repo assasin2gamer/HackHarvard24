@@ -10,7 +10,7 @@ import Navbar from "components/Navbars/Navbar.js";
 import Footer from "components/Footer/Footer.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
 import FixedPlugin from "components/FixedPlugin/FixedPlugin.js";
-
+import PromptBox from "components/PromptBox/PromptBox";
 import routes from "routes.js";
 
 import styles from "assets/jss/material-dashboard-react/layouts/adminStyle.js";
@@ -110,19 +110,9 @@ export default function Login({ ...rest }) {
           handleDrawerToggle={handleDrawerToggle}
           {...rest}
         />
-        <div>
-            Hello
 
-            <div>
-                <h1>Sign in</h1>
-                <form>
-                    <label htmlFor="email">Email</label>
-                    <input type="email" id="email" name="email" required></input>
-                    <label htmlFor="password">Password</label>
-                    <input type="password" id="password" name="password" required></input>
-                    <button type="submit">Sign in</button>
-                </form>
-            </div>
+        <div style={{paddingTop:'8vh', height:'85vh', width:'95%', margin:'auto', justifyContent:'center'}}>
+        <PromptBox/>
         </div>
         
         {getRoute() ? <Footer /> : null}

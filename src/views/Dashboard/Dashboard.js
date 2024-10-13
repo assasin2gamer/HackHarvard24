@@ -400,63 +400,53 @@ export default function Dashboard() {
         </GridItem>
       </GridContainer>
 
-      <GridContainer>
-        <PromptBox/>
-      </GridContainer>
-      <GridContainer>
+      <div style={{display:'flex', width:'100vw'}}>
+      <GridContainer style={{width:'50%', margin:'0'}}>
         <Prediction/>
       </GridContainer>
 
-      <GridContainer>
+      <GridContainer style={{width:'40vw', margin:'0', display:'flex'}}>
         {/* Heart Rate Data Chart */}
-        <GridItem xs={12} sm={12} md={6}>
+        <div style={{width:'34vw'}}>
           <Card chart>
             <CardHeader color="info">
               <Chart
                 options={heartRateData.options}
                 series={heartRateData.series}
                 type="line"
-                height={350}
+                height={190}
               />
             </CardHeader>
-            <CardBody color="info">
-              <h4 className={classes.cardTitle}>Heart Rate Data</h4>
-              <p className={classes.cardCategory}>
-                Visual representation of heart rate readings.
-              </p>
-            </CardBody>
+            
             <CardFooter chart>
               {/* <div className={classes.stats}>
                 <AccessTime /> updated {new Date().toLocaleTimeString()}
               </div> */}
             </CardFooter>
           </Card>
-        </GridItem>
+        </div>
         {/* Sleep Data Chart */}
-        <GridItem xs={12} sm={12} md={6}>
+        <div style={{width:'34vw'}}>
           <Card chart>
             <CardHeader color="info">
               <Chart
                 options={sleepData.options}
                 series={sleepData.series}
                 type="bar"
-                height={350}
+                height={190}
               />
             </CardHeader>
-            <CardBody>
-              <h4 className={classes.cardTitle}>Sleep Data</h4>
-              <p className={classes.cardCategory}>
-                Visual representation of sleep duration readings.
-              </p>
-            </CardBody>
+            
             <CardFooter chart>
               <div className={classes.stats}>
                 <AccessTime /> updated {new Date().toLocaleTimeString()}
               </div>
             </CardFooter>
           </Card>
-        </GridItem>
+        </div>
       </GridContainer>
+      </div>
+      
       {/* <GridContainer>
         <GridItem xs={12} sm={12} md={4}>
           <Card chart>

@@ -24,7 +24,7 @@ function PromptBox() {
   };
 
   return (
-    <Card>
+    <Card style={{height:'100%'}}>
       <CardHeader color="success" stats icon>
         <CardIcon color="success">
           <NightlightIcon /> {/* Moon icon here */}

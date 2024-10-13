@@ -8,6 +8,10 @@ import { makeStyles } from "@material-ui/core/styles";
 import Icon from "@material-ui/core/Icon";
 // @material-ui/icons
 import Store from "@material-ui/icons/Store";
+import RepeatIcon from '@mui/icons-material/Repeat';
+import HotelIcon from '@mui/icons-material/Hotel';
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
+import SpeedIcon from '@mui/icons-material/Speed';
 import Warning from "@material-ui/icons/Warning";
 import DateRange from "@material-ui/icons/DateRange";
 import LocalOffer from "@material-ui/icons/LocalOffer";
@@ -30,6 +34,7 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardIcon from "components/Card/CardIcon.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
+import PromptBox from "components/PromptBox/PromptBox.js";
 
 import { bugs, website, server } from "variables/general.js";
 
@@ -47,38 +52,168 @@ export default function Dashboard() {
 
   const classes = useStyles();
 
+  const [curHeartRate, setCurHeartRate] = useState(null)
+  const [curSleep, setCurSleep] = useState(null)
+  const [curBloodPressure, setCurBloodPressure] = useState(null)
+  const [curAvgCycle, setCurAvgCycle] = useState(null)
+
   const [heartRateData, setHeartRateData] = useState({
     options: {
       chart: {
         id: "heart-rate-chart",
+        animateGradually: {
+          enabled: true,
+          delay: 150, // Gradual line animation
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350, // Animation speed for dynamic updates
+        },
+        toolbar: {
+          show: false,
+        },
+        zoom: {
+          autoScaleYaxis: true,
+        },
+      },
+      dataLabels: {
+        enabled: false,
       },
       xaxis: {
-        categories: [],
+        type: "datetime", // Handles UNIX timestamps in milliseconds
+        labels: {
+          datetimeUTC: false, // Display dates in local time
+          style: {
+            colors: "#000000",
+            fontSize: "10px",
+          },
+          formatter: function (value) {
+            return new Date(value).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            }); // Format to display only the time
+          },
+        },
+        axisBorder: {
+          show: false,
+        },
+        axisTicks: {
+          show: false,
+        },
+      },
+      tooltip: {
+        theme: "dark",
+        style: {
+          fontSize: "12px",
+          fontFamily: "Helvetica, Arial, sans-serif",
+          color: "#000", // Black text color for tooltip
+        },
+        x: {
+          format: "dd MMM yyyy, HH:mm", // Display date and time
+        },
+        y: {
+          formatter: (value) => `Heart Rate: ${value} bpm`, // Tooltip format for value
+        },
       },
       title: {
-        text: "Heart Rate Data",
+        text: "Heart Rate (BPM)",
         align: "left",
+        style: {
+          fontSize: "16px",
+          fontWeight: "bold",
+        },
+      },
+      stroke: {
+        curve: 'smooth',  // Optional: makes the line smooth
+        colors: ["#FEFCEC"], // Set the color of the line here (e.g., "#FF5733" for orange)
+        width: 3, // Optional: set the line thickness
       },
     },
     series: [
       {
-        name: "Heart Rate",
-        data: [],
+        name: "Heart Rate (BPM)",
+        data: [], // Heart rate values
       },
     ],
   });
+  
+  
 
   const [sleepData, setSleepData] = useState({
     options: {
       chart: {
-        id: "sleep-chart",
+        type: 'bar',
+        height: 350
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 4,
+          borderRadiusApplication: 'end',
+          colors: {
+            ranges: [{
+              from: 0,
+              to: 1000,
+              color: "#FEFCEC" // Set the color you want for bars (e.g., Dodger Blue)
+            }]
+          },
+        },
+      },
+      dataLabels: {
+        enabled: false
       },
       xaxis: {
-        categories: [],
+        type: "datetime", // Handles UNIX timestamps in milliseconds
+        labels: {
+          datetimeUTC: false, // Display dates in local time
+          style: {
+            colors: "#000000",
+            fontSize: "10px",
+          },
+          formatter: function (value) {
+            return new Date(value).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            }); // Format to display only the time
+          },
+        },
+        axisBorder: {
+          show: false,
+        },
+        axisTicks: {
+          show: false,
+        },
+      },
+      yaxis: {
+        forceNiceScale: true,
+        labels: {
+          formatter: function (val) {
+            return Math.round(val); // Round to integer
+          },
+        },
+      },
+      tooltip: {
+        theme: "dark",
+        style: {
+          fontSize: "12px",
+          fontFamily: "Helvetica, Arial, sans-serif",
+          color: "#000", // Black text color for tooltip
+        },
+        x: {
+          format: "dd MMM yyyy, HH:mm", // Display date and time
+        },
+        y: {
+          formatter: (value) => `Heart Rate: ${value} bpm`, // Tooltip format for value
+        },
       },
       title: {
-        text: "Sleep Data",
+        text: "Sleep Duration",
         align: "left",
+        style: {
+          fontSize: "16px",
+          fontWeight: "bold",
+        },
       },
     },
     series: [
@@ -104,6 +239,12 @@ export default function Dashboard() {
       if (data.heartArr && data.sleep) {
         const currentTime = new Date().toLocaleTimeString();
 
+        setCurHeartRate(data.heartArr[data.heartArr.length - 1])
+        setCurSleep(data.sleep[data.sleep.length - 1])
+        // TODO add blood pressure
+        setCurAvgCycle(data.averageCycle[data.averageCycle.length - 1])
+
+
         // Update heart rate data
         // setHeartRateData((prevState) => {
         //   const newData = [
@@ -127,28 +268,38 @@ export default function Dashboard() {
           series: [
             {
               name: "Heart Rate",
-              data: [...prevOptions.series[0].data, data.heartArr[data.heartArr.length - 1]],
+              data: [...prevOptions.series[0].data, [Date.now(), data.heartArr[data.heartArr.length - 1]]],
+            },
+          ],
+        }));
+
+        setSleepData((prevOptions) => ({
+          ...prevOptions,
+          series: [
+            {
+              name: "Sleep Data",
+              data: [...prevOptions.series[0].data, [Date.now(), data.sleep[data.sleep.length - 1]]],
             },
           ],
         }));
         
-        // update sleepData
-        setSleepData((prevState) => {
-          const newData = [
-            ...prevState.series[0].data,
-            [Date.now(), data.sleep[data.sleep.length - 1].duration],
-          ];
+        // // update sleepData
+        // setSleepData((prevState) => {
+        //   const newData = [
+        //     ...prevState.series[0].data,
+        //     [Date.now(), data.sleep[data.sleep.length - 1].duration],
+        //   ];
         
-          return {
-            ...prevState,
-            series: [
-              {
-                name: "Sleep Duration (hrs)",
-                data: newData, // Updated to include all sleep data points in series
-              },
-            ],
-          };
-        });
+        //   return {
+        //     ...prevState,
+        //     series: [
+        //       {
+        //         name: "Sleep Duration (hrs)",
+        //         data: newData, // Updated to include all sleep data points in series
+        //       },
+        //     ],
+        //   };
+        // });
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -157,7 +308,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData(); // Initial fetch
-    const interval = setInterval(fetchData, 20000); // Fetch data every 20 seconds
+    const interval = setInterval(fetchData, 5000); // Fetch data every 20 seconds
     return () => clearInterval(interval); // Cleanup on unmount
   }, []);
 
@@ -178,20 +329,20 @@ export default function Dashboard() {
           <Card>
             <CardHeader color="warning" stats icon>
               <CardIcon color="warning">
-                <Icon>content_copy</Icon>
+                <RepeatIcon/>
               </CardIcon>
-              <p className={classes.cardCategory}>Used Space</p>
+              <p className={classes.cardCategory}>Current Average Cycle</p>
               <h3 className={classes.cardTitle}>
-                49/50 <small>GB</small>
+               {curAvgCycle ? curAvgCycle.toFixed(2) : "N/A"} <small>[units]</small>
               </h3>
             </CardHeader>
             <CardFooter stats>
-              <div className={classes.stats}>
+              {/* <div className={classes.stats}>
                 <Warning />
                 <a href="#pablo" onClick={(e) => e.preventDefault()}>
                   Get more space
                 </a>
-              </div>
+              </div> */}
             </CardFooter>
           </Card>
         </GridItem>
@@ -199,16 +350,16 @@ export default function Dashboard() {
           <Card>
             <CardHeader color="success" stats icon>
               <CardIcon color="success">
-                <Store />
+                <HotelIcon />
               </CardIcon>
-              <p className={classes.cardCategory}>Revenue</p>
-              <h3 className={classes.cardTitle}>$34,245</h3>
+              <p className={classes.cardCategory}>Current Sleep Duration</p>
+              <h3 className={classes.cardTitle}> {curSleep ? curSleep.toFixed(2) : "N/A"} <small> hours</small> </h3>
             </CardHeader>
             <CardFooter stats>
-              <div className={classes.stats}>
+              {/* <div className={classes.stats}>
                 <DateRange />
                 Last 24 Hours
-              </div>
+              </div> */}
             </CardFooter>
           </Card>
         </GridItem>
@@ -216,16 +367,16 @@ export default function Dashboard() {
           <Card>
             <CardHeader color="danger" stats icon>
               <CardIcon color="danger">
-                <Icon>info_outline</Icon>
+                <MonitorHeartIcon/>
               </CardIcon>
-              <p className={classes.cardCategory}>Fixed Issues</p>
-              <h3 className={classes.cardTitle}>75</h3>
+              <p className={classes.cardCategory}>Current Heart Rate</p>
+              <h3 className={classes.cardTitle}>{curHeartRate ? curHeartRate : "N/A"} <small> BPM</small></h3>
             </CardHeader>
             <CardFooter stats>
-              <div className={classes.stats}>
+              {/* <div className={classes.stats}>
                 <LocalOffer />
                 Tracked from Github
-              </div>
+              </div> */}
             </CardFooter>
           </Card>
         </GridItem>
@@ -233,19 +384,23 @@ export default function Dashboard() {
           <Card>
             <CardHeader color="info" stats icon>
               <CardIcon color="info">
-                <Accessibility />
+                <SpeedIcon />
               </CardIcon>
-              <p className={classes.cardCategory}>Followers</p>
-              <h3 className={classes.cardTitle}>+245</h3>
+              <p className={classes.cardCategory}>Current Blood Presure</p>
+              <h3 className={classes.cardTitle}><small>mmHg</small></h3>
             </CardHeader>
             <CardFooter stats>
-              <div className={classes.stats}>
+              {/* <div className={classes.stats}>
                 <Update />
                 Just Updated
-              </div>
+              </div> */}
             </CardFooter>
           </Card>
         </GridItem>
+      </GridContainer>
+
+      <GridContainer>
+        <PromptBox/>
       </GridContainer>
 
       <GridContainer>
@@ -267,9 +422,9 @@ export default function Dashboard() {
               </p>
             </CardBody>
             <CardFooter chart>
-              <div className={classes.stats}>
+              {/* <div className={classes.stats}>
                 <AccessTime /> updated {new Date().toLocaleTimeString()}
-              </div>
+              </div> */}
             </CardFooter>
           </Card>
         </GridItem>
